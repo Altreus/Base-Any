@@ -66,4 +66,8 @@ is 1234.&to-base-alphabet(<A B C D E F>), 1234.&to-base-alphabet("ABCDEF"), 'arr
 is 0.&to-base-alphabet(<A B C D E F>), 'A', 'arbitrary zero character (A) succeeded';
 is 1234.&to-base-alphabet(<A B C D E F>), 1234.base(6).trans(%(<A B C D E F>.pairs)), 'alphabet base is just normal base with tr';
 
+say 0.1.&to-base-alphabet(<A B C D E>);
+
+say 0.8.&to-base(8);
+
 done-testing;

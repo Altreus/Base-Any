@@ -20,31 +20,8 @@ multi convert-arbitrary-base (Int $num, Int $radix where * <= $threshold) {
     @__base-any-digits[$num.polymod( $radix xx * ).reverse || 0].join
 }
 
-# Detect and die for radicies outside the threshold
-multi to-base ( Any $num, Int $radix where * > $threshold ) is export {
-    nan-inf($num) if $num === NaN or $num == Inf;
-    die "Sorry, can not convert to base $radix, to-base() only handles up to base { $threshold - 1 }." ~
-        " Try to-base-array() or to-bash-hash() maybe?";
- }
-
-
-# Normal base 2 <-> 36
-multi to-base ( Real $num, Int $radix where 1 < * < 37 ) is export {
-    nan-inf($num) if $num === NaN or $num == Inf; # shouldn't be necessary for Int multis
-    $num.base($radix)
-}
-
-
-# Integer base 37 <-> 4516
-multi to-base ( Int $num, Int $radix where 36 < * <= $threshold ) is export {
-    nan-inf($num) if $num === NaN or $num == Inf; # shouldn't be necessary for Int multis
-    convert-arbitrary-base($num, $radix);
-}
-
-
-# Positive Real base 37 <-> 4516
-multi to-base ( Real $num, Int $radix where 36 < * <= $threshold, :$precision = -15 ) is export {
-    nan-inf($num) if $num === NaN or $num == Inf;
+multi convert-arbitrary-base(Real $num, Int $radix where * < $threshold, :$precision) {
+    say "Convert arbitrary base: Real $num";
     my $sign = $num < 0 ?? '-' !! '';
     return '0' unless $num;
 
@@ -65,6 +42,38 @@ multi to-base ( Real $num, Int $radix where 36 < * <= $threshold, :$precision = 
         $place--
     }
     $sign ~ $result
+}
+
+
+# Detect and die for radicies outside the threshold
+multi to-base ( Any $num, Int $radix where * > $threshold ) is export {
+    nan-inf($num) if $num === NaN or $num == Inf;
+    die "Sorry, can not convert to base $radix, to-base() only handles up to base { $threshold - 1 }." ~
+        " Try to-base-array() or to-bash-hash() maybe?";
+}
+
+
+# Normal base 2 <-> 36
+multi to-base ( Real $num, Int $radix where 1 < * < 37 ) is export {
+    nan-inf($num) if $num === NaN or $num == Inf; # shouldn't be necessary for Int multis
+    say "Using Real.base";
+    $num.base($radix)
+}
+
+
+# Integer base 37 <-> 4516
+multi to-base ( Int $num, Int $radix where 36 < * <= $threshold ) is export {
+    nan-inf($num) if $num === NaN or $num == Inf; # shouldn't be necessary for Int multis
+    say "Using convert-arbitrary-base Int";
+    convert-arbitrary-base($num, $radix);
+}
+
+
+# Positive Real base 37 <-> 4516
+multi to-base ( Real $num, Int $radix where 36 < * <= $threshold, :$precision = -15 ) is export {
+    nan-inf($num) if $num === NaN or $num == Inf;
+    say "Using convert-arbitrary-base Real";
+    convert-arbitrary-base($num, $radix, :$precision);
 }
 
 
@@ -113,15 +122,23 @@ multi to-base ( Numeric $num, Complex $radix where *.re == 0, :$precision = -12 
     $fraction eq 0 ?? "$whole" !! "$whole.$fraction"
 }
 
-multi to-base-alphabet ( Numeric $num, Str $alphabet ) is export {
+multi to-base-alphabet ( Int $num, Str $alphabet ) is export {
     to-base-alphabet($num, $alphabet.comb);
 }
 
-multi to-base-alphabet ( Numeric $num, @alphabet ) is export {
+multi to-base-alphabet ( Int $num, @alphabet ) is export {
     temp @__base-any-digits = @alphabet;
     temp $threshold = +@alphabet;
 
     return convert-arbitrary-base( $num, $threshold );
+}
+
+multi to-base-alphabet ( Real $num, @alphabet, :$precision = -15 ) is export {
+    temp @__base-any-digits = @alphabet;
+    temp $threshold = +@alphabet;
+
+    say $threshold;
+    return convert-arbitrary-base( $num, $threshold, :$precision );
 }
 
 ####  from-base multis   ######################################################
