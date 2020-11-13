@@ -59,4 +59,8 @@ dies-ok { NaN.&to-base(12) }, 'dies ok with NaN, "small" positive base';
 dies-ok { NaN.&to-base(92) }, 'dies ok with NaN, "large" positive base';
 dies-ok { NaN.&to-base(-52) }, 'dies ok with NaN, negative base';
 
+lives-ok { 1234.&to-base-alphabet(<A B C D E F>) }, 'lives ok with alphabet';
+is 0.&to-base-alphabet(<A B C D E F>), 'A', 'arbitrary zero character (A) succeeded';
+is 1234.&to-base-alphabet(<A B C D E F>), 1234.base(6).trans(%(<A B C D E F>.pairs)), 'alphabet base is just normal base with tr';
+
 done-testing;

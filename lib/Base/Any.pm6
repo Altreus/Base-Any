@@ -14,6 +14,11 @@ my %active-base = @__base-any-digits[^62].pairs.invert;
 
 ####  to-base multis   ########################################################
 
+# Separate so I can bypass Real.base if I want to. Not doing nan-inf check here!
+sub convert-arbitrary-base (Numeric $num, Int $radix where * <= $threshold) {
+    @__base-any-digits[$num.polymod( $radix xx * ).reverse || 0].join
+}
+
 # Detect and die for radicies outside the threshold
 multi to-base ( Any $num, Int $radix where * > $threshold ) is export {
     nan-inf($num) if $num === NaN or $num == Inf;
@@ -32,7 +37,7 @@ multi to-base ( Real $num, Int $radix where 1 < * < 37 ) is export {
 # Integer base 37 <-> 4516
 multi to-base ( Int $num, Int $radix where 36 < * <= $threshold ) is export {
     nan-inf($num) if $num === NaN or $num == Inf; # shouldn't be necessary for Int multis
-    @__base-any-digits[$num.polymod( $radix xx * ).reverse].join || '0'
+    convert-arbitrary-base($num, $radix);
 }
 
 
@@ -107,6 +112,12 @@ multi to-base ( Numeric $num, Complex $radix where *.re == 0, :$precision = -12 
     $fraction eq 0 ?? "$whole" !! "$whole.$fraction"
 }
 
+sub to-base-alphabet ( Numeric $num, @alphabet ) is export {
+    temp @__base-any-digits = @alphabet;
+    temp $threshold = +@alphabet;
+
+    return convert-arbitrary-base( $num, $threshold );
+}
 
 ####  from-base multis   ######################################################
 
