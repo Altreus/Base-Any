@@ -15,7 +15,8 @@ my %active-base = @__base-any-digits[^62].pairs.invert;
 ####  to-base multis   ########################################################
 
 # Separate so I can bypass Real.base if I want to. Not doing nan-inf check here!
-sub convert-arbitrary-base (Numeric $num, Int $radix where * <= $threshold) {
+multi convert-arbitrary-base (Int $num, Int $radix where * <= $threshold) {
+    say "Convert arbitrary base: Int $num - $radix";
     @__base-any-digits[$num.polymod( $radix xx * ).reverse || 0].join
 }
 
@@ -112,7 +113,11 @@ multi to-base ( Numeric $num, Complex $radix where *.re == 0, :$precision = -12 
     $fraction eq 0 ?? "$whole" !! "$whole.$fraction"
 }
 
-sub to-base-alphabet ( Numeric $num, @alphabet ) is export {
+multi to-base-alphabet ( Numeric $num, Str $alphabet ) is export {
+    to-base-alphabet($num, $alphabet.comb);
+}
+
+multi to-base-alphabet ( Numeric $num, @alphabet ) is export {
     temp @__base-any-digits = @alphabet;
     temp $threshold = +@alphabet;
 
